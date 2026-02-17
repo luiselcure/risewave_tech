@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Chakra+Petch:wght@300;400;500;600;700&display=swap");
+
+:root {
+  /* Cyber-Japandi Color Palette */
+  --cream: #efefe4;
+  --red-accent: #d92525;
+  --dark: #1a1f24;
+  --teal: #2d9b9b;
+  --teal-light: #4dbdbd;
+
+  --background: var(--cream);
+  --foreground: var(--dark);
+}
+
+@theme inline {
+  /* Colors */
+  --color-cream: var(--cream);
+  --color-red-accent: var(--red-accent);
+  --color-dark: var(--dark);
+  --color-teal: var(--teal);
+  --color-teal-light: var(--teal-light);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Fonts */
+  --font-heading: "Orbitron", sans-serif;
+  --font-body: "Chakra Petch", sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  margin: 0;
+  padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
