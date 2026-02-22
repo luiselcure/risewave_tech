@@ -61,6 +61,8 @@ export async function POST(request) {
           apellido: user.apellido,
           email: user.email,
           role: user.role,
+          telefono: user.telefono,
+          direccion: user.direccion,
         },
       },
       { status: 201 }
