@@ -1,36 +1,46 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const ProductSchema = new mongoose.Schema({
   titulo: {
     type: String,
-    required: [true, 'Por favor ingresa el título del producto'],
+    required: [true, "Por favor ingresa el título del producto"],
     trim: true,
   },
   descripcion: {
     type: String,
-    required: [true, 'Por favor ingresa la descripción del producto'],
+    required: [true, "Por favor ingresa la descripción del producto"],
   },
   precio: {
     type: Number,
-    required: [true, 'Por favor ingresa el precio del producto'],
-    min: [0, 'El precio debe ser mayor o igual a 0'],
+    required: [true, "Por favor ingresa el precio"],
+    min: [0, "El precio no puede ser negativo"],
   },
-  imagenUrl: {
-    type: String,
-    required: [true, 'Por favor ingresa la URL de la imagen'],
+  image: {
+    public_id: {
+      type: String,
+      required: false,
+    },
+    url: {
+      type: String,
+      required: [true, "Por favor ingresa la URL de la imagen"],
+    },
   },
   categoria: {
     type: String,
-    required: [true, 'Por favor selecciona una categoría'],
+    required: [true, "Por favor selecciona una categoría"],
     enum: {
-      values: ['Artículos de Oficina', 'Gadgets Gaming', 'Mejoras para el Hogar'],
-      message: 'Categoría no válida',
+      values: [
+        "Artículos de Oficina",
+        "Gadgets Gaming",
+        "Mejoras para el Hogar",
+      ],
+      message: "Categoría no válida",
     },
   },
   stock: {
     type: Number,
-    required: [true, 'Por favor ingresa el stock disponible'],
-    min: [0, 'El stock debe ser mayor o igual a 0'],
+    required: [true, "Por favor ingresa el stock disponible"],
+    min: [0, "El stock debe ser mayor o igual a 0"],
     default: 0,
   },
   createdAt: {
@@ -39,4 +49,5 @@ const ProductSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.models.Product || mongoose.model('Product', ProductSchema);
+export default mongoose.models.Product ||
+  mongoose.model("Product", ProductSchema);

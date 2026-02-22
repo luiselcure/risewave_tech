@@ -51,7 +51,7 @@ export default function RegisterPage() {
 
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok) {
         // Auto-login after registration
         const loginResponse = await fetch('/api/auth/login', {
           method: 'POST',
@@ -64,12 +64,15 @@ export default function RegisterPage() {
 
         const loginData = await loginResponse.json();
 
-        if (loginData.success) {
-          setUser(loginData.user, loginData.token);
+        if (loginResponse.ok) {
+          setUser(loginData.user, null);
           router.push('/dashboard');
+        } else {
+          // If auto-login fails, redirect to login page
+          router.push('/login');
         }
       } else {
-        setError(data.message);
+        setError(data.message || 'Error de validación en el registro.');
       }
     } catch (error) {
       setError('Error al registrar. Por favor intenta nuevamente.');

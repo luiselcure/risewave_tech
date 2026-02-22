@@ -26,15 +26,30 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="bg-gradient-to-r from-teal to-teal-light text-cream p-8">
             <div className="flex items-center space-x-4">
-              <div className="bg-cream/20 p-4 rounded-full">
+              <div className="bg-cream/20 p-4 rounded-full relative">
                 <User size={48} className="text-cream" />
+                {user.role && user.role !== 'user' && (
+                  <span className="absolute -top-2 -right-2 bg-red-accent text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase">
+                    {user.role}
+                  </span>
+                )}
               </div>
-              <div>
+              <div className="flex-1">
                 <h1 className="text-3xl font-heading font-bold">
                   {user.nombre} {user.apellido}
                 </h1>
                 <p className="text-cream/90 font-body">Panel de Usuario</p>
               </div>
+              {user.role && ['admin', 'master'].includes(user.role) && (
+                <div>
+                  <button 
+                    onClick={() => router.push('/admin')}
+                    className="bg-red-accent hover:bg-red-600 text-white px-4 py-2 rounded font-bold font-body transition-colors text-sm"
+                  >
+                    Ir al Admin Panel
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

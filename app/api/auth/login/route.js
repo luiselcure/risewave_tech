@@ -1,73 +1,82 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import dbConnect from '@/lib/db';
+import connectDB from '@/lib/db';
 import User from '@/models/User';
+import jwt from 'jsonwebtoken';
+import { userLoginSchema } from '@/lib/validations/userSchema';
 
 export async function POST(request) {
   try {
-    await dbConnect();
+    const body = await request.json();
 
-    const { email, password } = await request.json();
-
-    // Validation
-    if (!email || !password) {
+    // 1. Zod Validation
+    const validationResult = userLoginSchema.safeParse(body);
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(err => ({
+        path: err.path.join('.'),
+        message: err.message
+      }));
       return NextResponse.json(
-        { success: false, message: 'Email y contraseña son requeridos' },
+        { message: 'Error de validación', errors },
         { status: 400 }
       );
     }
 
-    // Find user with password field
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const { email, password } = validationResult.data;
 
+    await connectDB();
+
+    // Find user by email and explicitly select the password field
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'Email o contraseña incorrectos' },
+        { message: 'Credenciales inválidas' },
         { status: 401 }
       );
     }
 
-    // Verify password
-    const isPasswordValid = await user.comparePassword(password);
-
-    if (!isPasswordValid) {
+    // Check password
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
       return NextResponse.json(
-        { success: false, message: 'Email o contraseña incorrectos' },
+        { message: 'Credenciales inválidas' },
         { status: 401 }
       );
     }
 
-    // Generate JWT token
+    // Update lastLogin
+    user.lastLogin = new Date();
+    await user.save({ validateModifiedOnly: true });
+
+    // Generate JWT token including role
     const token = jwt.sign(
-      { userId: user._id, email: user.email },
-      process.env.JWT_SECRET,
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET || 'fallback_secret_for_development',
       { expiresIn: '7d' }
     );
 
-    // Create response with user data
+    // Create the response
     const response = NextResponse.json(
       {
-        success: true,
-        message: 'Inicio de sesión exitoso',
+        message: 'Login exitoso',
         user: {
           id: user._id,
           nombre: user.nombre,
           apellido: user.apellido,
           email: user.email,
-          telefono: user.telefono,
-          direccion: user.direccion,
+          role: user.role,
         },
-        token,
       },
       { status: 200 }
     );
 
-    // Set cookie with token
-    response.cookies.set('token', token, {
+    // Set HttpOnly cookie for auth
+    response.cookies.set({
+      name: 'token',
+      value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
 
@@ -75,7 +84,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { success: false, message: 'Error al iniciar sesión' },
+      { message: 'Error en el servidor al procesar el login' },
       { status: 500 }
     );
   }

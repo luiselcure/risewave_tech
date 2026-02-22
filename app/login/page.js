@@ -36,11 +36,12 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      if (data.success) {
-        setUser(data.user, data.token);
+      if (response.ok) {
+        // We pass null for token since it's now securely stored in an HttpOnly cookie
+        setUser(data.user, null);
         router.push('/dashboard');
       } else {
-        setError(data.message);
+        setError(data.message || 'Error al iniciar sesión.');
       }
     } catch (error) {
       setError('Error al iniciar sesión. Por favor intenta nuevamente.');

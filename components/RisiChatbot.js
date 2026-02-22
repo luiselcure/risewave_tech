@@ -33,6 +33,9 @@ export default function RisiChatbot() {
     // Simple response logic
     let response = 'Lo siento, no entendí tu pregunta. ¿Podrías ser más específico?';
     
+    // Check if user is staff (admin/master) for advanced commands
+    const isStaff = isAuthenticated && ['admin', 'master'].includes(user?.role);
+
     if (input.toLowerCase().includes('envio') || input.toLowerCase().includes('envío')) {
       response = faqs.envios;
     } else if (input.toLowerCase().includes('material')) {
@@ -41,6 +44,12 @@ export default function RisiChatbot() {
       response = faqs.tiempos;
     } else if (input.toLowerCase().includes('personalizado') || input.toLowerCase().includes('custom')) {
       response = faqs.personalizado;
+    } else if (isStaff && input.toLowerCase().includes('status')) {
+      response = '[SYS OK]: MongoDB Connected. Cloudinary SDK Online. Edge Middleware Active. API Routes Secured.';
+    } else if (isStaff && input.toLowerCase().includes('logs')) {
+      response = 'Para revisar los logs de auditoría, acceda a la consola de Vercel (Producción) o verifique la colección de Usuarios para el campo "lastLogin".';
+    } else if (isStaff) {
+       response = 'Comando no reconocido. Comandos Admin disponibles: "status", "logs".';
     }
 
     setTimeout(() => {
