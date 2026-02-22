@@ -8,17 +8,21 @@ export async function GET(request) {
   try {
     await connectDB();
 
-    const { searchParams } = new URL(request.url);
+    // En Next.js 15, req.nextUrl.searchParams es la forma estandar.
+    const searchParams = request.nextUrl.searchParams;
     const categoria = searchParams.get('categoria');
 
     // Build query
-    const query = {};
+    const query = { visible: true }; // Only show visible products to public
     if (categoria && categoria !== 'all') {
-      query.categoria = categoria;
+      // Búsqueda case-insensitive (ignorando mayúsculas/minúsculas)
+      query.categoria = new RegExp(`^${categoria}$`, 'i');
     }
 
     // Fetch products
     const products = await Product.find(query).sort({ createdAt: -1 });
+
+    console.log('Productos encontrados:', products.length);
 
     return NextResponse.json(
       {

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
 // Paths that require 'admin' or 'master' role
@@ -6,7 +7,7 @@ const adminPaths = ['/admin'];
 // Paths that require exclusively 'master' role
 const masterOnlyPaths = ['/admin/master-only'];
 
-export async function middleware(request) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAdminPath = adminPaths.some(path => pathname.startsWith(path));
@@ -23,7 +24,7 @@ export async function middleware(request) {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret_for_development');
       const { payload } = await jwtVerify(token, secret);
       
-      const role = payload.role;
+      const role = payload.role as string;
 
       // Master check
       if (isMasterOnlyPath && role !== 'master') {

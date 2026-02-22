@@ -31,9 +31,9 @@ export default function CatalogPage() {
       const response = await fetch('/api/products');
       const data = await response.json();
       
-      if (data.success) {
-        setProducts(data.products);
-        setFilteredProducts(data.products);
+      if (response.ok) {
+        setProducts(data.products || []);
+        setFilteredProducts(data.products || []);
       }
     } catch (error) {
       console.error('Error fetching products:', error);

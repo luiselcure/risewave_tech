@@ -43,6 +43,15 @@ const ProductSchema = new mongoose.Schema({
     min: [0, "El stock debe ser mayor o igual a 0"],
     default: 0,
   },
+  estado: {
+    type: String,
+    enum: ["Activo", "Pausado", "Sin Stock"],
+    default: "Activo",
+  },
+  visible: {
+    type: Boolean,
+    default: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

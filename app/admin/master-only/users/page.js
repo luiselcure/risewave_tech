@@ -60,6 +60,49 @@ export default function MasterUserManager() {
     }
   };
 
+  const handleResetPassword = async (userId, email) => {
+    if (!confirm(`¿Estás seguro de resetear la contraseña de ${email}? El sistema le asignará 'Temporal123!' por defecto.`)) return;
+
+    try {
+      setActionMessage(null);
+      setErrorDesc(null);
+
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action: 'reset_password' })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al resetear contraseña');
+
+      setActionMessage(data.message);
+    } catch (err) {
+      setErrorDesc(err.message);
+    }
+  };
+
+  const handleDeleteUser = async (userId, email) => {
+    if (!confirm(`⚠️ ALERTA CRÍTICA: ¿Estás ABSOLUTAMENTE SEGURO de eliminar por completo la cuenta de ${email}? Esta acción no se puede deshacer.`)) return;
+
+    try {
+      setActionMessage(null);
+      setErrorDesc(null);
+
+      const res = await fetch(`/api/admin/users?userId=${userId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al eliminar usuario');
+
+      setActionMessage(data.message);
+      fetchUsers();
+    } catch (err) {
+      setErrorDesc(err.message);
+    }
+  };
+
   if (isLoading) return <div className="text-center py-12">Cargando base de usuarios...</div>;
 
   return (
@@ -94,7 +137,8 @@ export default function MasterUserManager() {
                 <th className="p-4 border-b border-dark/20 text-sm">Email</th>
                 <th className="p-4 border-b border-dark/20 text-sm">Rol Actual</th>
                 <th className="p-4 border-b border-dark/20 text-sm">Último Login</th>
-                <th className="p-4 border-b border-dark/20 text-sm">Acciones Master</th>
+                <th className="p-4 border-b border-dark/20 text-sm">Gestión de Roles</th>
+                <th className="p-4 border-b border-dark/20 text-sm text-center">Acciones Críticas</th>
               </tr>
             </thead>
             <tbody className="font-body text-sm text-dark/80">
@@ -106,7 +150,7 @@ export default function MasterUserManager() {
                     <span className={`px-2 py-1 rounded text-xs font-bold ${
                       user.role === 'master' ? 'bg-red-accent text-white' : 
                       user.role === 'admin' ? 'bg-teal text-white' : 
-                      'bg-gray-200 text-dark'
+                      'bg-dark/10 text-dark'
                     }`}>
                       {user.role.toUpperCase()}
                     </span>
@@ -114,21 +158,41 @@ export default function MasterUserManager() {
                   <td className="p-4">
                     {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Nunca'}
                   </td>
-                  <td className="p-4">
+                  <td className="p-4 text-center items-center">
                     {user.role === 'master' ? (
-                      <span className="text-xs text-dark/40 italic flex items-center">
-                        <ShieldCheck size={14} className="mr-1"/> Intocable
+                      <span className="text-xs text-red-accent font-bold flex items-center justify-center">
+                        <ShieldCheck size={14} className="mr-1"/> Master
                       </span>
                     ) : (
                       <select 
                         value={user.role}
                         onChange={(e) => handleRoleChange(user._id, user.email, e.target.value)}
-                        className="bg-cream border border-dark/20 rounded p-1 text-xs outline-none focus:border-red-accent"
+                        className="bg-cream border border-dark/20 rounded p-1 text-xs outline-none focus:border-teal"
                       >
                         <option value="user">USER</option>
                         <option value="admin">ADMIN</option>
                       </select>
                     )}
+                  </td>
+                  <td className="p-4 text-center flex space-x-2 items-center justify-center">
+                     {user.role === 'master' ? (
+                        <span className="text-xs text-dark/40 italic">Inmune</span>
+                     ) : (
+                        <>
+                          <button 
+                            onClick={() => handleResetPassword(user._id, user.email)}
+                            className="bg-teal text-cream px-3 py-1 rounded text-xs font-bold hover:bg-teal-light transition-colors"
+                          >
+                            Reset Pass
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteUser(user._id, user.email)}
+                            className="bg-red-accent text-cream px-3 py-1 rounded text-xs font-bold hover:bg-red-600 transition-colors"
+                          >
+                            Eliminar
+                          </button>
+                        </>
+                     )}
                   </td>
                 </tr>
               ))}
