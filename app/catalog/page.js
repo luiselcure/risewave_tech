@@ -58,7 +58,7 @@ export default function CatalogPage() {
       <div className="bg-gradient-to-r from-dark to-teal text-cream py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">
-            Arsenal
+            Nuestro Catálogo
           </h1>
           <p className="text-lg font-body text-cream/90">
             Todo lo que necesitas para optimizar el espacio con estilo

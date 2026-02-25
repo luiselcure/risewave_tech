@@ -1,76 +1,73 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   return (
     <div className="bg-cream">
       {/* Hero Section - Cyber-Japandi */}
-      <section className="relative min-h-[600px] flex items-center overflow-hidden">
-        {/* Background Pattern - Seigaiha waves */}
-        <div 
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M25 50 Q 25 37.5 37.5 37.5 T 50 50' stroke='%231A1F24' fill='none' stroke-width='2'/%3E%3C/svg%3E")`,
-            backgroundSize: '100px 100px',
-          }}
-        />
+      <section className="relative min-h-[600px] flex items-center overflow-hidden bg-cream">
+        
+        {/* Right: Great Wave Illustration (Absolute Background) */}
+        <div className="absolute right-0 bottom-0 top-0 w-full md:w-3/5 opacity-40 md:opacity-100 flex justify-end items-end pointer-events-none">
+          <div className="w-full h-full relative">
+            {/* Gradient fade to seamlessly blend the image with the cream background on the left */}
+            <div className="absolute inset-0 bg-gradient-to-r from-cream via-cream/50 to-transparent z-10 hidden md:block" />
+            <div className="absolute inset-0 bg-gradient-to-t from-cream via-transparent to-transparent z-10 md:hidden" />
+            <Image 
+              src="/great_wave.png" 
+              alt="The Great Wave illustration" 
+              fill
+              className="object-cover md:object-contain object-right-bottom drop-shadow-2xl mix-blend-multiply"
+              priority
+            />
+          </div>
+        </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Left: Text Content */}
-            <div>
-              <h1 className="text-5xl md:text-6xl font-heading font-bold text-dark mb-6">
-                Optimizá tu espacio con un{' '}
-                <span className="text-red-accent">toque 3D</span>
-              </h1>
-              <p className="text-xl font-body text-dark/80 mb-8">
-                Impresión 3D de precisión. Prototipado maker y gadgets para gaming.
-              </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-20 w-full">
+          <div className="max-w-xl lg:max-w-2xl">
+            {/* Title */}
+            <h1 className="text-5xl md:text-6xl font-heading font-bold text-dark mb-6 leading-tight">
+              Optimizá tu espacio con un{' '}
+              <span className="text-teal">toque 3D</span>
+            </h1>
+            
+            {/* Description */}
+            <p className="text-lg md:text-xl font-body font-bold text-dark/80 mb-8 uppercase tracking-wide">
+              Impresión 3D de precisión,<br className="hidden sm:block" />prototipado maker y gadgets para gaming.
+            </p>
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-6 mb-8">
-                <div className="text-center">
-                  <div className="text-4xl font-heading font-bold text-red-accent">48h</div>
-                  <div className="text-sm font-body text-dark/70">ENTREGA</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-heading font-bold text-teal">+20</div>
-                  <div className="text-sm font-body text-dark/70">GADGETS PARA ELEGIR</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-heading font-bold text-dark">100%</div>
-                  <div className="text-sm font-body text-dark/70">PROYECTOS PERSONALIZABLES</div>
-                </div>
-              </div>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-wrap gap-4">
-                <Link
-                  href="/catalog"
-                  className="px-8 py-4 bg-dark text-cream font-body font-bold rounded hover:bg-teal transition-colors"
-                >
-                  Catálogo de gadgets
-                </Link>
-                <Link
-                  href="/contact"
-                  className="px-8 py-4 bg-red-accent text-cream font-body font-bold rounded hover:bg-red-accent/90 transition-colors"
-                >
-                  Desbloqueá tu personalizado
-                </Link>
-              </div>
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap gap-4 mb-8">
+              <Link
+                href="/catalog"
+                className="px-6 py-3 bg-dark text-cream font-body font-bold rounded-md hover:bg-dark/90 transition-colors shadow-lg leading-tight"
+              >
+                Catálogo de<br />gadgets
+              </Link>
+              <Link
+                href="/contact"
+                className="px-6 py-3 bg-red-accent text-white font-body font-bold rounded-md hover:bg-red-600 transition-colors shadow-lg leading-tight"
+              >
+                Desbloqueá tu<br />personalizado
+              </Link>
             </div>
 
-            {/* Right: Great Wave Illustration */}
-            <div className="relative">
-              <div className="aspect-square bg-gradient-to-br from-teal/30 via-red-accent/20 to-dark/30 rounded-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-8xl mb-4">🌊</div>
-                  <p className="text-2xl font-heading font-bold text-dark">
-                    The Great Wave
-                  </p>
-                  <p className="text-sm font-body text-dark/70">
-                    Inspired by Kanagawa
-                  </p>
-                </div>
+            {/* Divider Line */}
+            <div className="w-full h-[2px] bg-dark/70 mb-8"></div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <div className="text-4xl md:text-5xl font-heading font-bold text-red-accent mb-1 tracking-tight">48h</div>
+                <div className="text-xs font-body font-bold text-dark/80 uppercase">ENTREGA</div>
+              </div>
+              <div>
+                <div className="text-4xl md:text-5xl font-heading font-bold text-dark mb-1 tracking-tight">+20</div>
+                <div className="text-xs font-body font-bold text-dark/80 uppercase">GADGETS PARA<br/>ELEGIR</div>
+              </div>
+              <div>
+                <div className="text-4xl md:text-5xl font-heading font-bold text-red-accent mb-1 tracking-tight">100%</div>
+                <div className="text-xs font-body font-bold text-dark/80 uppercase">PROYECTOS<br/>PERSONALIZABLES</div>
               </div>
             </div>
           </div>
@@ -81,7 +78,7 @@ export default function Home() {
       <section className="py-16 bg-dark/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-heading font-bold text-cream text-center mb-4">
-            Arsenal
+            Nuestro Catálogo
           </h2>
           <p className="text-lg font-body text-cream/80 text-center mb-12">
             Categorías principales
