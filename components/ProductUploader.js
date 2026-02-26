@@ -5,17 +5,29 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { productSchema } from '@/lib/validations/productSchema';
 import { UploadCloud, CheckCircle, XCircle } from 'lucide-react';
+import CostCalculator from '@/components/CostCalculator';
+import { useEffect } from 'react';
 
 export default function ProductUploader({ onSuccess }) {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null); // 'success' | 'error' | null
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const storeStr = localStorage.getItem('auth-storage');
+    if (storeStr) {
+      const { state } = JSON.parse(storeStr);
+      if (state?.user?.role) setUserRole(state.user.role);
+    }
+  }, []);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(productSchema),
@@ -162,6 +174,9 @@ export default function ProductUploader({ onSuccess }) {
           />
           {errors.descripcion && <span className="text-red-500 text-sm">{errors.descripcion.message}</span>}
         </div>
+
+        {/* 3D Printing Cost Engine - Integrated Calculator */}
+        <CostCalculator setValue={setValue} role={userRole} />
 
         <div className="border-2 border-dashed border-dark/20 p-6 rounded-lg text-center items-center justify-center flex flex-col hover:border-teal transition-colors">
           {imagePreview ? (

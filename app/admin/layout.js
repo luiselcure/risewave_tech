@@ -61,13 +61,22 @@ export default function AdminLayout({ children }) {
           </Link>
 
           {role === 'master' && (
-            <Link 
-              href="/admin/master-only/users" 
-              className="flex items-center space-x-3 px-4 py-3 rounded hover:bg-white/5 transition-colors border-l-2 border-red-accent"
-            >
-              <Users size={20} />
-              <span>Usuarios (Master)</span>
-            </Link>
+            <>
+              <Link 
+                href="/admin/master-only/users" 
+                className="flex items-center space-x-3 px-4 py-3 rounded hover:bg-white/5 transition-colors border-l-2 border-red-accent"
+              >
+                <Users size={20} />
+                <span>Usuarios (Master)</span>
+              </Link>
+              <Link 
+                href="/admin/master-only/settings" 
+                className="flex items-center space-x-3 px-4 py-3 rounded hover:bg-white/5 transition-colors border-l-2 border-teal"
+              >
+                <Settings size={20} />
+                <span>Costos de Impresión</span>
+              </Link>
+            </>
           )}
         </nav>
 
