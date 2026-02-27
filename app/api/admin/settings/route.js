@@ -7,7 +7,7 @@ import { verifyRole } from '@/lib/auth';
  * GET /api/admin/settings
  * Returns the default cost settings (Master Only)
  */
-export const GET = verifyRole(['master'], async (req) => {
+export const GET = verifyRole(['admin', 'master'], async (req) => {
   await dbConnect();
   
   try {
@@ -38,7 +38,7 @@ export const GET = verifyRole(['master'], async (req) => {
  * POST /api/admin/settings
  * Upserts the default cost settings (Master Only)
  */
-export const POST = verifyRole(['master'], async (req) => {
+export const POST = verifyRole(['admin', 'master'], async (req) => {
   await dbConnect();
   
   try {

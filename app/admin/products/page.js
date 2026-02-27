@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import ProductUploader from '@/components/ProductUploader';
-import { Package, Eye, EyeOff, Edit2, Plus, Info } from 'lucide-react';
+import { Package, Eye, EyeOff, Edit2, Plus, Info, Trash2 } from 'lucide-react';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showUploader, setShowUploader] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -54,6 +55,26 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+    setShowUploader(true);
+    // Scroll to top where the uploader is
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este producto de forma permanente?')) return;
+    
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) fetchProducts();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between pb-4 border-b-2 border-dark/10">
@@ -74,10 +95,22 @@ export default function AdminProductsPage() {
 
       {showUploader && (
         <section className="animate-in fade-in slide-in-from-top-4 duration-300">
-          <ProductUploader onSuccess={() => {
-            setShowUploader(false);
-            fetchProducts();
-          }} />
+          <ProductUploader 
+            initialData={editingProduct}
+            onSuccess={() => {
+              setShowUploader(false);
+              setEditingProduct(null);
+              fetchProducts();
+            }} 
+          />
+          <div className="flex justify-end mt-4">
+            <button 
+              onClick={() => { setShowUploader(false); setEditingProduct(null); }}
+              className="text-dark/60 hover:text-dark font-body text-sm underline"
+            >
+              Cancelar {editingProduct ? 'Edición' : 'Creación'}
+            </button>
+          </div>
         </section>
       )}
 
@@ -103,6 +136,7 @@ export default function AdminProductsPage() {
                   <th className="p-4 border-b border-dark/20 text-sm">Categoría</th>
                   <th className="p-4 border-b border-dark/20 text-sm">Estado</th>
                   <th className="p-4 border-b border-dark/20 text-sm text-center">Visibilidad</th>
+                  <th className="p-4 border-b border-dark/20 text-sm text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody className="font-body text-sm text-dark/80">
@@ -144,6 +178,22 @@ export default function AdminProductsPage() {
                         title={p.visible ? "Ocultar producto" : "Mostrar producto"}
                       >
                         {p.visible ? <Eye size={20} /> : <EyeOff size={20} />}
+                      </button>
+                    </td>
+                    <td className="p-4 text-center flex items-center justify-center space-x-2">
+                      <button 
+                        onClick={() => handleEdit(p)}
+                        className="p-2 text-teal hover:bg-teal/10 rounded-full transition-colors"
+                        title="Editar producto"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(p._id)}
+                        className="p-2 text-red-accent hover:bg-red-accent/10 rounded-full transition-colors"
+                        title="Eliminar producto"
+                      >
+                        <Trash2 size={18} />
                       </button>
                     </td>
                   </tr>

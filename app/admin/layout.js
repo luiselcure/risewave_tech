@@ -31,7 +31,7 @@ export default function AdminLayout({ children }) {
   return (
     <div className="min-h-screen flex bg-cream">
       {/* Sidebar */}
-      <aside className="w-64 bg-dark text-cream flex flex-col hidden md:flex">
+      <aside className="w-64 bg-dark text-cream flex-col hidden md:flex">
         <div className="p-6 border-b border-white/10">
           <Link href="/admin">
             <h1 className="text-2xl font-heading font-bold text-teal">
@@ -61,22 +61,23 @@ export default function AdminLayout({ children }) {
           </Link>
 
           {role === 'master' && (
-            <>
-              <Link 
-                href="/admin/master-only/users" 
-                className="flex items-center space-x-3 px-4 py-3 rounded hover:bg-white/5 transition-colors border-l-2 border-red-accent"
-              >
-                <Users size={20} />
-                <span>Usuarios (Master)</span>
-              </Link>
-              <Link 
-                href="/admin/master-only/settings" 
-                className="flex items-center space-x-3 px-4 py-3 rounded hover:bg-white/5 transition-colors border-l-2 border-teal"
-              >
-                <Settings size={20} />
-                <span>Costos de Impresión</span>
-              </Link>
-            </>
+            <Link 
+              href="/admin/master-only/users" 
+              className="flex items-center space-x-3 px-4 py-3 rounded hover:bg-white/5 transition-colors border-l-2 border-red-accent"
+            >
+              <Users size={20} />
+              <span>Usuarios (Master)</span>
+            </Link>
+          )}
+
+          {['admin', 'master'].includes(role) && (
+            <Link 
+              href="/admin/settings" 
+              className="flex items-center space-x-3 px-4 py-3 rounded hover:bg-white/5 transition-colors border-l-2 border-teal"
+            >
+              <Settings size={20} />
+              <span>Costos de Impresión</span>
+            </Link>
           )}
         </nav>
 

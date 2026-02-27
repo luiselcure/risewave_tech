@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { ShoppingCart } from 'lucide-react';
 import useStore from '@/lib/store';
 
@@ -11,7 +12,7 @@ export default function ProductCard({ product }) {
       id: product._id,
       titulo: product.titulo,
       precio: product.precio,
-      imagenUrl: product.imagenUrl,
+      imagenUrl: product.image?.url || '/placeholder.png', // Fixing addToCart payload
     });
   };
 
@@ -23,8 +24,18 @@ export default function ProductCard({ product }) {
   return (
     <div className="bg-white border-2 border-dark/10 rounded-lg overflow-hidden hover:shadow-lg hover:border-teal transition-all duration-300 flex flex-col">
       {/* Product Image */}
-      <div className="h-48 bg-gradient-to-br from-teal/20 to-red-accent/20 flex items-center justify-center">
-        <div className="text-4xl font-heading text-dark/30">3D</div>
+      <div className="relative h-48 w-full bg-dark/5 flex items-center justify-center">
+        {product.image?.url ? (
+          <Image
+            src={product.image.url}
+            alt={product.titulo}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="text-4xl font-heading text-dark/30">3D</div>
+        )}
       </div>
 
       {/* Product Info */}

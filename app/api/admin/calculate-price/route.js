@@ -7,7 +7,7 @@ import { verifyRole } from '@/lib/auth';
  * POST /api/admin/calculate-price
  * Receives { weight, hours } and calculates the suggested price based on Master settings.
  */
-export const POST = verifyRole(['master'], async (req) => {
+export const POST = verifyRole(['admin', 'master'], async (req) => {
   await dbConnect();
   
   try {
