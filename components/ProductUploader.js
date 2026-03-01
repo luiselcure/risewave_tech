@@ -17,7 +17,7 @@ export default function ProductUploader({ onSuccess, initialData }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    const storeStr = localStorage.getItem('auth-storage');
+    const storeStr = localStorage.getItem('risewave-storage');
     if (storeStr) {
       const { state } = JSON.parse(storeStr);
       if (state?.user?.role) {
@@ -200,22 +200,20 @@ export default function ProductUploader({ onSuccess, initialData }) {
         </div>
 
         {/* 3D Printing Cost Engine - Structural Fix */}
-        {['admin', 'master'].includes(userRole) && (
-          <div className="bg-cream/30 p-4 border-2 border-teal/20 rounded flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="font-heading font-bold text-teal text-sm">3D Printing Cost Engine</span>
-              <span className="text-xs text-dark/60 font-body">Calcula un precio base preciso según tus costos.</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="bg-teal text-cream px-4 py-2 rounded font-heading text-sm hover:scale-105 transition-transform flex items-center space-x-2 shadow-sm"
-            >
-              <Calculator size={16} />
-              <span>Calcular precio</span>
-            </button>
+        <div className="bg-cream/30 p-4 border-2 border-teal/20 rounded flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="font-heading font-bold text-teal text-sm">3D Printing Cost Engine</span>
+            <span className="text-xs text-dark/60 font-body">Calcula un precio base preciso según tus costos.</span>
           </div>
-        )}
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="bg-teal text-cream px-4 py-2 rounded font-heading text-sm hover:scale-105 transition-transform flex items-center space-x-2 shadow-sm"
+          >
+            <Calculator size={16} />
+            <span>Calcular precio</span>
+          </button>
+        </div>
 
         <div>
           <label className="block text-sm font-bold mb-1">Descripción</label>

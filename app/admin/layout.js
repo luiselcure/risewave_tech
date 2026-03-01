@@ -12,7 +12,7 @@ export default function AdminLayout({ children }) {
   useEffect(() => {
     // Basic client-side check from local state or token decoding
     // Real protection happens in middleware.ts (Edge) and verifyRole (Server)
-    const storeStr = localStorage.getItem('auth-storage');
+    const storeStr = localStorage.getItem('risewave-storage');
     if (storeStr) {
       const { state } = JSON.parse(storeStr);
       if (state && state.user && state.user.role) {
@@ -22,8 +22,7 @@ export default function AdminLayout({ children }) {
   }, []);
 
   const handleLogout = () => {
-    // Clear Zustand store and cookies
-    localStorage.removeItem('auth-storage');
+    localStorage.removeItem('risewave-storage');
     document.cookie = 'token=; Max-Age=0; path=/';
     router.push('/login');
   };
