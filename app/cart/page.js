@@ -1,46 +1,57 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import useStore from '@/lib/store';
 import { Trash2, Plus, Minus, ShoppingBag, CreditCard } from 'lucide-react';
 import Link from 'next/link';
+import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
+
+initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY, { locale: 'es-AR' });
 
 export default function CartPage() {
   const router = useRouter();
-  const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart, isAuthenticated } = useStore();
+  const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart, isAuthenticated, user } = useStore();
+  const [preferenceId, setPreferenceId] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!isAuthenticated) {
       router.push('/login');
       return;
     }
 
-    // TODO: Integrate MercadoPago
-    // This is where you would initialize MercadoPago Checkout
-    // Example structure:
-    /*
-    const mp = new MercadoPago('YOUR_PUBLIC_KEY');
-    const preference = {
-      items: cart.map(item => ({
-        title: item.titulo,
-        quantity: item.quantity,
-        unit_price: item.precio,
-      })),
-      back_urls: {
-        success: `${window.location.origin}/payment-success`,
-        failure: `${window.location.origin}/payment-failure`,
-        pending: `${window.location.origin}/payment-pending`,
-      },
-      auto_return: 'approved',
-    };
-    
-    mp.checkout({
-      preference,
-      render: { container: '.checkout-btn', label: 'Pagar con MercadoPago' },
-    });
-    */
-    
-    alert('Integración de MercadoPago lista para configurar. Agrega tus credenciales en el código.');
+    try {
+      setIsProcessing(true);
+      const res = await fetch('/api/checkout/mercadopago', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: cart,
+          payer: {
+            email: user?.email,
+            name: user?.nombre,
+            surname: user?.apellido
+          }
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.preferenceId) {
+         setPreferenceId(data.preferenceId);
+      } else {
+         console.error('Error del servidor:', data.message);
+         alert('Hubo un problema procesando el pago. Verifica la consola.');
+      }
+    } catch (error) {
+       console.error('Error al iniciar Checkout:', error);
+       alert('Hubo un error de red al intentar procesar el pago.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (cart.length === 0) {
@@ -148,14 +159,20 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <button
-                onClick={handleCheckout}
-                disabled={cart.length === 0}
-                className="w-full bg-red-accent text-cream py-3 px-6 rounded font-body font-bold hover:bg-red-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 mb-3"
-              >
-                <CreditCard size={20} />
-                <span>Proceder al Pago</span>
-              </button>
+              {!preferenceId ? (
+                <button
+                  onClick={handleCheckout}
+                  disabled={cart.length === 0 || isProcessing}
+                  className="w-full bg-red-accent text-cream py-3 px-6 rounded font-body font-bold hover:bg-red-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 mb-3"
+                >
+                  <CreditCard size={20} />
+                  <span>{isProcessing ? 'Procesando...' : 'Proceder al Pago'}</span>
+                </button>
+              ) : (
+                <div className="w-full mt-4">
+                  <Wallet initialization={{ preferenceId: preferenceId }} customization={{ texts: { valueProp: 'smart_option' } }} />
+                </div>
+              )}
 
               <button
                 onClick={clearCart}
