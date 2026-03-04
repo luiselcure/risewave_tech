@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
+import connectDB from '@/lib/db';
+import Order from '@/models/Order';
 
 // Inicializa el cliente MercadoPagoConfig usando la variable de entorno MP_ACCESS_TOKEN
 const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
@@ -8,19 +10,69 @@ export async function POST(request) {
   try {
     const { items, payer } = await request.json();
 
-    // Validar que el carrito no esté vacío
-    if (!items || items.length === 0) {
-      return NextResponse.json({ message: 'El carrito está vacío' }, { status: 400 });
+    // Validar datos mínimos
+    if (!payer || !payer.email || !payer.name) {
+      return NextResponse.json({ message: 'Faltan datos del comprador' }, { status: 400 });
     }
 
     // Transforma los productos al formato de Mercado Pago
-    const mpItems = items.map(item => ({
-      id: item.id.toString(),
-      title: item.titulo,
-      quantity: Number(item.quantity),
-      unit_price: Number(item.precio),
-      currency_id: 'ARS',
+    let totalCalculado = 0;
+    const mpItems = items.map(item => {
+      const price = Number(item.precio);
+      const qty = Number(item.quantity);
+      totalCalculado += price * qty;
+      return {
+        id: item.id.toString(),
+        title: item.titulo,
+        quantity: qty,
+        unit_price: price,
+        currency_id: 'ARS',
+      };
+    });
+
+    // Parse buyer data
+    const comprador = {
+      nombre: `${payer.name} ${payer.surname || ''}`.trim(),
+      email: payer.email,
+      telefono: payer.telefono || 'No especificado'
+    };
+
+    // Parse shipping data
+    const datosEnvio = payer.direccion ? {
+      calle: payer.direccion.calle || '',
+      altura: payer.direccion.altura || '',
+      ciudad: payer.direccion.ciudad || '',
+      codigoPostal: payer.direccion.codigoPostal || '',
+      provincia: payer.direccion.provincia || ''
+    } : {
+      calle: 'No especificada',
+      altura: '0',
+      ciudad: 'No especificada',
+      codigoPostal: '0000'
+    };
+    
+    // Parse order items for DB
+    const orderItems = items.map(item => ({
+      product_id: item.id,
+      titulo: item.titulo,
+      precio: Number(item.precio),
+      cantidad: Number(item.quantity),
+      color: item.color || null
     }));
+
+    await connectDB();
+
+    // Creacion del documento de Orden inicial
+    const nuevaOrden = new Order({
+      comprador,
+      datosEnvio,
+      items: orderItems,
+      total: totalCalculado,
+      estado_pago: 'Pendiente',
+      estado_envio: 'Preparando'
+    });
+
+    await nuevaOrden.save();
 
     // Asegúrate de que baseUrl no tenga una barra al final antes de usarla
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -32,17 +84,22 @@ export async function POST(request) {
       body: {
         items: mpItems,
         payer: {
-          email: "test_user_mail@testuser.com" // Email genérico para forzar validación
+          email: payer.email
         },
+        external_reference: nuevaOrden._id.toString(), // Optional but good for MP back-sync
         back_urls: {
-          // Usamos URLs HTTPS públicas temporalmente para evadir el bloqueo de localhost
-          success: "https://www.google.com/search?q=exito",
-          failure: "https://www.google.com/search?q=fallo",
-          pending: "https://www.google.com/search?q=pendiente"
+          // Usamos URLs HTTPS públicas temporalmente o relativas al proy
+          success: `${cleanBaseUrl}/payment-success`,
+          failure: `${cleanBaseUrl}/payment-failure`,
+          pending: `${cleanBaseUrl}/payment-pending`
         },
         auto_return: 'approved'
       }
     });
+
+    // Actualizar la orden con el ID de la preferencia
+    nuevaOrden.mp_preference_id = response.id;
+    await nuevaOrden.save();
 
     return NextResponse.json({ preferenceId: response.id }, { status: 200 });
 

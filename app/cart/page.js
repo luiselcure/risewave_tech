@@ -33,7 +33,9 @@ export default function CartPage() {
           payer: {
             email: user?.email,
             name: user?.nombre,
-            surname: user?.apellido
+            surname: user?.apellido,
+            telefono: user?.telefono,
+            direccion: user?.direccion
           }
         }),
       });
@@ -101,6 +103,9 @@ export default function CartPage() {
                 {/* Product Info */}
                 <div className="flex-1">
                   <h3 className="font-heading font-bold text-dark">{item.titulo}</h3>
+                  {item.color && (
+                    <p className="text-xs text-dark/70 font-body mb-1">Color: <span className="font-bold">{item.color}</span></p>
+                  )}
                   <p className="text-red-accent font-body font-bold">
                     ${item.precio.toLocaleString()}
                   </p>
@@ -109,14 +114,14 @@ export default function CartPage() {
                 {/* Quantity Controls */}
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
                     className="p-1 bg-dark/10 rounded hover:bg-dark/20 transition-colors"
                   >
                     <Minus size={16} />
                   </button>
                   <span className="w-8 text-center font-body font-bold">{item.quantity}</span>
                   <button
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
                     className="p-1 bg-dark/10 rounded hover:bg-dark/20 transition-colors"
                   >
                     <Plus size={16} />
@@ -125,7 +130,7 @@ export default function CartPage() {
 
                 {/* Remove */}
                 <button
-                  onClick={() => removeFromCart(item.id)}
+                  onClick={() => removeFromCart(item.cartItemId)}
                   className="p-2 text-red-accent hover:bg-red-accent/10 rounded transition-colors"
                   title="Eliminar del carrito"
                 >

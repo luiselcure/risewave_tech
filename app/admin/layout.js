@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Package, Users, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, Package, Users, LogOut, Settings, ShoppingCart } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
@@ -49,6 +49,14 @@ export default function AdminLayout({ children }) {
           >
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
+          </Link>
+
+          <Link 
+            href="/admin/orders" 
+            className="flex items-center space-x-3 px-4 py-3 rounded hover:bg-white/5 transition-colors"
+          >
+            <ShoppingCart size={20} />
+            <span>Pedidos</span>
           </Link>
 
           <Link 

@@ -8,6 +8,11 @@ import { UploadCloud, CheckCircle, XCircle, Calculator } from 'lucide-react';
 import CostCalculator from '@/components/CostCalculator';
 import { useEffect } from 'react';
 
+const AVAILABLE_COLORS = [
+  'Rojo', 'Negro', 'Beige/Crema', 'Blanco', 
+  'Verde Militar', 'Marrón Claro', 'Marrón Suave'
+];
+
 export default function ProductUploader({ onSuccess, initialData }) {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(initialData?.image?.url || null);
@@ -15,6 +20,10 @@ export default function ProductUploader({ onSuccess, initialData }) {
   const [uploadStatus, setUploadStatus] = useState(null); // 'success' | 'error' | null
   const [userRole, setUserRole] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Custom state for colors (can also be handled via react-hook-form setValue/watch, but this is simpler for UI interactions)
+  const [selectedColors, setSelectedColors] = useState(initialData?.colores || []);
+  const [colorError, setColorError] = useState('');
 
   useEffect(() => {
     const storeStr = localStorage.getItem('risewave-storage');
@@ -40,10 +49,12 @@ export default function ProductUploader({ onSuccess, initialData }) {
       categoria: initialData.categoria,
       precio: initialData.precio,
       stock: initialData.stock,
-      descripcion: initialData.descripcion
+      descripcion: initialData.descripcion,
+      colores: initialData.colores || []
     } : {
       precio: 0,
       stock: 0,
+      colores: []
     }
   });
 
@@ -55,14 +66,38 @@ export default function ProductUploader({ onSuccess, initialData }) {
         categoria: initialData.categoria,
         precio: initialData.precio,
         stock: initialData.stock,
-        descripcion: initialData.descripcion
+        descripcion: initialData.descripcion,
+        colores: initialData.colores || []
       });
       setImagePreview(initialData.image?.url || null);
+      setSelectedColors(initialData.colores || []);
     } else {
-      reset({ titulo: '', categoria: '', precio: 0, stock: 0, descripcion: '' });
+      reset({ titulo: '', categoria: '', precio: 0, stock: 0, descripcion: '', colores: [] });
       setImagePreview(null);
+      setSelectedColors([]);
     }
+    setColorError('');
   }, [initialData, reset]);
+
+  const toggleColor = (color) => {
+    setColorError('');
+    let newColors;
+    
+    if (selectedColors.includes(color)) {
+      // Remove it
+      newColors = selectedColors.filter(c => c !== color);
+    } else {
+      // Add it, check limits
+      if (selectedColors.length >= 4) {
+        setColorError('Puedes seleccionar un máximo de 4 colores.');
+        return;
+      }
+      newColors = [...selectedColors, color];
+    }
+    
+    setSelectedColors(newColors);
+    setValue('colores', newColors, { shouldValidate: true, shouldDirty: true });
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -78,6 +113,12 @@ export default function ProductUploader({ onSuccess, initialData }) {
   };
 
   const onSubmit = async (data) => {
+    // Extra protection just in case
+    if (selectedColors.length > 4) {
+      setColorError('Máximo 4 colores permitidos.');
+      return;
+    }
+
     setIsUploading(true);
     setUploadStatus(null);
     try {
@@ -101,7 +142,8 @@ export default function ProductUploader({ onSuccess, initialData }) {
       // 2. Prepare payload for DB
       const payload = {
         ...data,
-        image: cloudinaryData || { public_id: '', url: 'https://via.placeholder.com/300' } // Fallback if no image
+        colores: selectedColors, // ensure it uses our custom state
+        image: cloudinaryData || (initialData?.image || { public_id: '', url: '/placeholder.png' })
       };
 
       // 3. Save or Update Product
@@ -121,6 +163,7 @@ export default function ProductUploader({ onSuccess, initialData }) {
         reset();
         setImageFile(null);
         setImagePreview(null);
+        setSelectedColors([]);
       }
       if (onSuccess) onSuccess();
 
@@ -135,7 +178,7 @@ export default function ProductUploader({ onSuccess, initialData }) {
   return (
     <div className="bg-white p-6 rounded-lg border-2 border-dark/10">
       <h2 className="text-xl font-heading font-bold text-dark mb-6">
-        {initialData ? 'Editar Producto' : 'Añadir Nuevo Producto (Upload a Cloudinary)'}
+        {initialData ? 'Editar Producto' : 'Añadir Nuevo Producto'}
       </h2>
       
       {uploadStatus === 'success' && (
@@ -223,6 +266,43 @@ export default function ProductUploader({ onSuccess, initialData }) {
             className="w-full p-2 border-2 rounded focus:border-teal outline-none"
           />
           {errors.descripcion && <span className="text-red-500 text-sm">{errors.descripcion.message}</span>}
+        </div>
+        
+        {/* Color Selection Section */}
+        <div className="border-2 border-dark/10 p-4 rounded-lg">
+          <label className="block text-sm font-bold mb-2">Colores (Máximo 4)</label>
+          <p className="text-xs text-dark/60 mb-3 font-body">
+            Selecciona los colores disponibles para este producto. Los clientes deberán elegir uno al comprar.
+          </p>
+          
+          <div className="flex flex-wrap gap-2">
+            {AVAILABLE_COLORS.map(color => {
+              const isSelected = selectedColors.includes(color);
+              return (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => toggleColor(color)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border-2 ${
+                    isSelected 
+                      ? 'border-teal bg-teal/10 text-teal' 
+                      : 'border-dark/10 bg-white text-dark/70 hover:border-dark/30'
+                  }`}
+                >
+                  {color}
+                </button>
+              );
+            })}
+          </div>
+          
+          {colorError && (
+             <p className="text-red-accent text-sm mt-3 flex items-center gap-1 font-medium">
+                <XCircle size={14} /> {colorError}
+             </p>
+          )}
+          {errors.colores && !colorError && (
+              <span className="text-red-500 text-sm mt-2 block">{errors.colores.message}</span>
+          )}
         </div>
 
         {/* 3D Printing Cost Engine - Modal Version */}
