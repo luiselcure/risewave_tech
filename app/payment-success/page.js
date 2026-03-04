@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import useStore from '@/lib/store';
 import Link from 'next/link';
 import { CheckCircle2, Home, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const { clearCart } = useStore();
   const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
@@ -30,10 +30,10 @@ export default function PaymentSuccessPage() {
          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal via-dark to-red-accent"></div>
          
          <div className="p-8 text-center sm:p-12">
-           {/* Success Icon */}
-           <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-teal/10 mb-6 border-2 border-teal/20 shadow-[0_0_15px_rgba(25,165,150,0.3)]">
-             <CheckCircle2 className="h-12 w-12 text-teal" aria-hidden="true" />
-           </div>
+            {/* Success Icon */}
+            <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-teal/10 mb-6 border-2 border-teal/20 shadow-[0_0_15px_rgba(25,165,150,0.3)]">
+              <CheckCircle2 className="h-12 w-12 text-teal" aria-hidden="true" />
+            </div>
 
            <h1 className="text-3xl font-heading font-extrabold text-dark tracking-tight mb-2">
              ¡Pago Exitoso!
@@ -79,5 +79,13 @@ export default function PaymentSuccessPage() {
          </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center">Cargando estado del pago...</div>}>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
