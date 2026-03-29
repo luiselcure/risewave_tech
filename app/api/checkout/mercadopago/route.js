@@ -8,6 +8,7 @@ const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN 
 
 export async function POST(request) {
   try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const { items, payer } = await request.json();
 
     // Validar datos mínimos
@@ -74,11 +75,15 @@ export async function POST(request) {
 
     await nuevaOrden.save();
 
-    // Asegúrate de que baseUrl no tenga una barra al final antes de usarla
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-
     const preference = new Preference(client);
+
+    // Only send notification_url if we have a real public URL (MercadoPago rejects localhost)
+    const isLocalhost = baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1');
+
+    console.log('URL de éxito enviada:', baseUrl + '/payment-success');
+    if (isLocalhost) {
+      console.warn('[MP] ⚠️ notification_url omitida porque baseUrl es localhost');
+    }
 
     const response = await preference.create({
       body: {
@@ -86,14 +91,14 @@ export async function POST(request) {
         payer: {
           email: payer.email
         },
-        external_reference: nuevaOrden._id.toString(), // Optional but good for MP back-sync
         back_urls: {
-          // Usamos URLs HTTPS públicas temporalmente o relativas al proy
-          success: `${cleanBaseUrl}/payment-success`,
-          failure: `${cleanBaseUrl}/payment-failure`,
-          pending: `${cleanBaseUrl}/payment-pending`
+          success: `${baseUrl}/payment-success`,
+          failure: `${baseUrl}/payment-failure`,
+          pending: `${baseUrl}/payment-pending`,
         },
-        auto_return: 'approved'
+        auto_return: 'approved',
+        external_reference: nuevaOrden._id.toString(),
+        ...(isLocalhost ? {} : { notification_url: `${baseUrl}/api/webhooks/mercadopago` }),
       }
     });
 

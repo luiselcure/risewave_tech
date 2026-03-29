@@ -9,6 +9,7 @@ const cspHeader = `
     connect-src 'self' https://*.mercadopago.com https://api.mercadopago.com https://*.mercadolibre.com https://*.mercadolivre.com https://http2.mlstatic.com;
     frame-src 'self' https://*.mercadopago.com https://*.mercadolibre.com;
     child-src 'self' https://*.mercadopago.com https://*.mercadolibre.com;
+    worker-src 'self' blob:;
     object-src 'none';
     base-uri 'self';
     form-action 'self';
