@@ -8,15 +8,22 @@ export async function POST(request) {
   try {
     const body = await request.json();
 
-    // 1. Zod Validation
+    // 1. Zod / Schema Validation
     const validationResult = userRegisterSchema.safeParse(body);
     if (!validationResult.success) {
-      const errors = validationResult.error.errors.map(err => ({
-        path: err.path.join('.'),
-        message: err.message
+      // Debug para ver la estructura real del error
+      console.error('Estructura de error de validación:', JSON.stringify(validationResult.error, null, 2));
+      
+      // Fallback robusto para buscar el array de errores
+      const errorArray = validationResult.error?.errors || validationResult.error?.issues || (Array.isArray(validationResult.error) ? validationResult.error : []);
+      
+      const errors = errorArray.map(err => ({
+        path: err.path ? err.path.join('.') : 'campo_desconocido',
+        message: err.message || 'Error de validación'
       }));
+      
       return NextResponse.json(
-        { message: 'Error de validación', errors },
+        { message: 'Error de validación en los datos ingresados', errors },
         { status: 400 }
       );
     }

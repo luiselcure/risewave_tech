@@ -3,14 +3,17 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useStore from '@/lib/store';
-import { User, MapPin, Phone, Mail, Edit2, Key, CheckCircle, XCircle, ChevronLeft } from 'lucide-react';
+import { User, MapPin, Phone, Mail, Edit2, Key, CheckCircle, XCircle, ChevronLeft, Bell } from 'lucide-react';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isAuthenticated, setUser } = useStore();
   
-  // Vista activa: 'info' | 'edit-profile' | 'change-password'
+  // Vista activa: 'info' | 'edit-profile' | 'change-password' | 'notifications'
   const [activeView, setActiveView] = useState('info');
+
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Form states
   const [profileForm, setProfileForm] = useState({
@@ -42,7 +45,31 @@ export default function DashboardPage() {
         codigoPostal: user.direccion?.codigoPostal || ''
       });
     }
+
+    if (isAuthenticated && user) {
+      fetch('/api/users/notifications')
+        .then(res => res.json())
+        .then(data => {
+          if (data.notifications) {
+            setNotifications(data.notifications);
+            setUnreadCount(data.notifications.filter(n => !n.leido).length);
+          }
+        })
+        .catch(console.error);
+    }
   }, [isAuthenticated, user, router, activeView]);
+
+  const markNotificationAsRead = async (id) => {
+    try {
+      const res = await fetch(`/api/users/notifications/${id}`, { method: 'PATCH' });
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => n._id === id ? { ...n, leido: true } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (err) {
+      console.error('Error marking as read', err);
+    }
+  };
 
   if (!isAuthenticated || !user) {
     return null;
@@ -163,6 +190,20 @@ export default function DashboardPage() {
                 >
                   <Key size={18} />
                   <span>Cambiar Contraseña</span>
+                </button>
+                <button
+                  onClick={() => { setActiveView('notifications'); setMessage(null); setErrorDesc(null); }}
+                  className={`flex items-center space-x-3 w-full p-2 rounded transition-colors justify-between ${activeView === 'notifications' ? 'bg-teal text-dark font-bold' : 'hover:bg-teal/20'}`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Bell size={18} />
+                    <span>Notificaciones</span>
+                  </div>
+                  {unreadCount > 0 && (
+                    <span className="bg-red-accent text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
                 </button>
               </nav>
             </div>
@@ -363,6 +404,53 @@ export default function DashboardPage() {
                     {loading ? 'Actualizando...' : 'Confirmar Nueva Contraseña'}
                   </button>
                 </form>
+              </div>
+            )}
+
+            {/* VISTA: NOTIFICACIONES */}
+            {activeView === 'notifications' && (
+              <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                <h2 className="text-2xl font-heading font-bold text-dark mb-6 border-b-2 border-dark/10 pb-4">
+                  Mis Notificaciones
+                </h2>
+                
+                {notifications.length === 0 ? (
+                  <p className="text-dark/60 font-body">No tienes notificaciones por el momento.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {notifications.map((notif) => (
+                      <div 
+                        key={notif._id} 
+                        className={`p-4 rounded-lg border-2 ${notif.leido ? 'bg-white border-dark/10' : 'bg-teal/5 border-teal/30'} transition-all`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              {!notif.leido && <div className="w-2 h-2 rounded-full bg-red-accent"></div>}
+                              <h3 className={`font-heading ${notif.leido ? 'text-dark/80 font-semibold' : 'text-dark font-bold text-lg'}`}>
+                                {notif.titulo}
+                              </h3>
+                            </div>
+                            <p className={`font-body text-sm ${notif.leido ? 'text-dark/60' : 'text-dark/90'}`}>
+                              {notif.mensaje}
+                            </p>
+                            <span className="text-xs text-dark/40 mt-2 block">
+                              {new Date(notif.createdAt).toLocaleString()}
+                            </span>
+                          </div>
+                          {!notif.leido && (
+                            <button 
+                              onClick={() => markNotificationAsRead(notif._id)}
+                              className="text-xs bg-teal/20 text-teal-dark px-3 py-1 rounded hover:bg-teal hover:text-white transition-colors ml-4"
+                            >
+                              Marcar como leída
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

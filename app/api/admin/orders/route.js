@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
+import Notification from '@/models/Notification';
 import { verifyRole } from '@/lib/auth';
 
 const getOrdersHandler = async (req) => {
@@ -37,6 +38,15 @@ const updateOrderStatusHandler = async (req) => {
 
     order.estado_envio = estado_envio;
     await order.save();
+
+    // Create a notification for the user if user_id exists
+    if (order.user_id) {
+      await Notification.create({
+        user_id: order.user_id,
+        titulo: 'Actualización de Pedido',
+        mensaje: `Tu pedido #${order._id.toString().slice(-6)} ahora está ${estado_envio}`,
+      });
+    }
 
     return NextResponse.json({ message: 'Estado actualizado correctamente', order }, { status: 200 });
   } catch (error) {

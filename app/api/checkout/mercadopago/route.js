@@ -8,7 +8,7 @@ const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN 
 
 export async function POST(request) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://risewave-tech.vercel.app';
     const { items, payer } = await request.json();
 
     // Validar datos mínimos
